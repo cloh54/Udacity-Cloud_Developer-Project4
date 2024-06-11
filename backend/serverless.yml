@@ -10,13 +10,13 @@ plugins:
 
 provider:
   name: aws
-  runtime: nodejs14.x
+  runtime: nodejs20.x
   stage: ${opt:stage, 'dev'}
   region: ${opt:region, 'us-east-1'}
   environment:
     TODOS_TABLE: todos-table-${self:provider.stage}
     TODOS_CREATED_AT_INDEX: CreatedAtIndex
-    TODOS_S3_BUCKET: todos-bucket-${self:provider.stage}
+    TODOS_S3_BUCKET: todos-bucket-${self:provider.stage}-cl6033
 
 functions:
 
@@ -50,7 +50,9 @@ functions:
           cors: true
           authorizer: Auth
     iamRoleStatementsInherit: true
-    Action:
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
           - dynamodb:PutItem
         Resource:
           - arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}
@@ -65,7 +67,9 @@ functions:
           cors: true
           authorizer: Auth
     iamRoleStatementsInherit: true
-    Action:
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
           - dynamodb:UpdateItem
           - dynamodb:GetItem
         Resource:
@@ -82,7 +86,9 @@ functions:
           cors: true
           authorizer: Auth
     iamRoleStatementsInherit: true
-    Action:
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
           - dynamodb:DeleteItem
           - dynamodb:GetItem
         Resource:
@@ -116,29 +122,29 @@ resources:
     TodosTable:
       Type: AWS::DynamoDB::Table
       Properties:
-      AttributeDefinitions:
-      - AttributeName: userId
-        AttributeType: S
-      - AttributeName: todoId
-        AttributeType: S
-      - AttributeName: createdAt
-        AttributeType: S
-      KeySchema:
-      - AttributeName: userId
-        KeyType: HASH
-      - AttributeName: todoId
-        KeyType: RANGE
-      BillingMode: PAY_PER_REQUEST
-      TableName: ${self:provider.environment.TODOS_TABLE}
-      LocalSecondaryIndexes:
-      - IndexName: ${self:provider.environment.TODOS_CREATED_AT_INDEX}
+        AttributeDefinitions:
+          - AttributeName: userId
+            AttributeType: S
+          - AttributeName: todoId
+            AttributeType: S
+          - AttributeName: createdAt
+            AttributeType: S
         KeySchema:
           - AttributeName: userId
             KeyType: HASH
-          - AttributeName: createdAt
+          - AttributeName: todoId
             KeyType: RANGE
-        Projection:
-          ProjectionType: ALL # What attributes will be copied to an index
+        BillingMode: PAY_PER_REQUEST
+        TableName: ${self:provider.environment.TODOS_TABLE}
+        LocalSecondaryIndexes:
+          - IndexName: ${self:provider.environment.TODOS_CREATED_AT_INDEX}
+            KeySchema:
+              - AttributeName: userId
+                KeyType: HASH
+              - AttributeName: createdAt
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL # What attributes will be copied to an index
           
     TodosBucket:
       Type: AWS::S3::Bucket
