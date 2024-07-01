@@ -43,6 +43,7 @@ export async function handler(event) {
 }
 
 async function verifyToken(authHeader) {
+  logger.info('verifyToken function')
   const token = getToken(authHeader)
   const jwt = jsonwebtoken.decode(token, { complete: true })
 
@@ -65,8 +66,10 @@ async function verifyToken(authHeader) {
 
   try {
     const verifiedToken = jsonwebtoken.verify(token, cert, { algorithms: ['RS256'] })
+    logger.info('Toekn verification passed')
     return verifiedToken
   } catch (e) {
+    logger.info('Token verrification failed')
     throw new Error('Token verification failed')
   }
 }
