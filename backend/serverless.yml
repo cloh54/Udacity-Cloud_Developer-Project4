@@ -7,12 +7,28 @@ service: serverless-todo-app
 plugins:
   - serverless-iam-roles-per-function
 
-
 provider:
   name: aws
   runtime: nodejs20.x
   stage: ${opt:stage, 'dev'}
   region: ${opt:region, 'us-east-1'}
+  profile: serverless
+  # iamRoleStatements:
+  #   - Effect: Allow
+  #     Action:
+  #       - dynamodb:Query
+  #       - dynamodb:Scan
+  #       - dynamodb:PutItem
+  #       - dynamodb:UpdateItem
+  #       - dynamodb:DeleteItem
+  #       - s3:PutObject
+  #       - s3:GetObject
+  #       - s3:DeleteObject
+  #       - s3:PutBucketPolicy
+  #       - logs:CreateLogGroup
+  #       - logs:CreateLogStream
+  #       - logs:PutLogEvents
+  #     Resource: "*"
   environment:
     TODOS_TABLE: todos-table-${self:provider.stage}
     TODOS_CREATED_AT_INDEX: CreatedAtIndex
@@ -151,19 +167,18 @@ resources:
       Properties:
         BucketName: ${self:provider.environment.TODOS_S3_BUCKET}
 
-    TodosBucketPolicy:
-      Type: AWS::S3::BucketPolicy
-      Properties:
-        Bucket: !Ref TodosBucket
-        PolicyDocument:
-          Version: '2012-10-17'
-          Statement:
-            - Effect: Allow
-              Principal: '*'
-              Action:
-                - s3:GetObject
-                - s3:PutObject
-              Resource: !Sub "${TodosBucket.Arn}/*"
+    # TodosBucketPolicy:
+    #   Type: AWS::S3::BucketPolicy
+    #   Properties:
+    #     Bucket: !Ref TodosBucket
+    #     PolicyDocument:
+    #       Version: '2012-10-17'
+    #       Statement:
+    #         - Effect: Allow
+    #           Principal: '*'
+    #           Action:
+    #             - s3:*
+    #           Resource: arn:aws:s3:::${self:provider.environment.TODOS_S3_BUCKET}/*
 
     TodosApiGatewayLogGroup:
       Type: AWS::Logs::LogGroup
