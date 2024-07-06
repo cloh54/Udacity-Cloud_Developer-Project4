@@ -1,8 +1,10 @@
-import uuidv4 from 'uuid';
-import AWS from 'aws-sdk';
+import {v4 as uuidv4} from 'uuid';
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import { PutCommand, DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 import { getUserId } from '../../auth/utils.mjs';
 
-const docClient = new AWS.DynamoDB.DocumentClient();
+const client = new DynamoDBClient({});
+const docClient = DynamoDBDocumentClient.from(client);
 
 export async function handler(event) {
   const newTodo = JSON.parse(event.body)
@@ -17,13 +19,14 @@ export async function handler(event) {
     createdAt: new Date().toISOString(),
     done: false
   }
-  const params = {
-    TableName: process.env.TODOS_TABLE,
-    Item: newItem
-  }
+
 
   try {
-    await docClient.put(params).promise();
+    const command = new PutCommand({
+      TableName: process.env.TODOS_TABLE,
+      Item: newItem
+    })
+    await docClient.send(command);
     return {
       statusCode: 201,
       headers: {

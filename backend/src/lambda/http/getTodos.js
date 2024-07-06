@@ -1,6 +1,9 @@
-import AWS from 'aws-sdk';
-const docClient = new AWS.DynamoDB.DocumentClient();
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import { DynamoDBDocumentClient, QueryCommand } from "@aws-sdk/lib-dynamodb";
 import { getUserId } from '../../auth/utils.mjs';
+
+const client = new DynamoDBClient({});
+const docClient = DynamoDBDocumentClient.from(client);
 
 export async function handler(event) {
   // TODO: Get all TODO items for a current user
@@ -14,7 +17,14 @@ export async function handler(event) {
   };
 
   try {
-    const result = await docClient.query(params).promise();
+    const command = new QueryCommand({
+      TableName: process.env.TODOS_TABLE,
+      KeyConditionExpression: 'userId = :userId',
+      ExpressionAttributeValues: {
+        ':userId': userId
+      }
+    });
+    const result = await docClient.send(command);
     return {
       statusCode: 200,
       headers: {

@@ -18,4 +18,5 @@ export function getUserId(event) {
   const jwtToken = split[1]
 
   return parseUserId(jwtToken)
+  
 }
