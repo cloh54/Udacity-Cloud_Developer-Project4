@@ -15,7 +15,7 @@ export async function handler(event) {
     userId: userId,
     todoId: todoId,
     name: newTodo.name,
-    duDate: newTodo.dueDate,
+    dueDate: newTodo.dueDate,
     createdAt: new Date().toISOString(),
     done: false
   }
